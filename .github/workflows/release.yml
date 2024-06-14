@@ -12,5 +12,5 @@ permissions:
 
 jobs:
   terraform-module:
-    uses: cloudposse/.github/.github/workflows/shared-release-branches.yml@main
+    uses: cloudposse/.github/.github/workflows/shared-release-branches.yml@289afbc41bbefd9a76f18024edc879e38145f1b4 # main
     secrets: inherit
