@@ -11,6 +11,6 @@ permissions:
 
 jobs:
   terraform-module:
-    uses: cloudposse/.github/.github/workflows/shared-terraform-chatops.yml@main
+    uses: cloudposse/.github/.github/workflows/shared-terraform-chatops.yml@289afbc41bbefd9a76f18024edc879e38145f1b4 # main
     secrets:
       github_access_token: ${{ secrets.REPO_ACCESS_TOKEN }}
