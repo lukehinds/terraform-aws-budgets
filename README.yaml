@@ -1,0 +1,147 @@
+#
+# This is the canonical configuration for the `README.md`
+# Run `make readme` to rebuild the `README.md`
+#
+
+# Name of this project
+name: terraform-aws-budgets
+
+# Logo for this project
+# logo: docs/logo.png
+
+# License of this project
+license: "APACHE2"
+
+# Copyrights
+copyrights:
+  - name: "Cloud Posse, LLC"
+    url: "https://cloudposse.com"
+    year: "2021"
+
+# Canonical GitHub repo
+github_repo: cloudposse/terraform-aws-budgets
+
+# Badges to display
+badges:
+  - name: Latest Release
+    image: https://img.shields.io/github/release/cloudposse/terraform-aws-budgets.svg?style=for-the-badge
+    url: https://github.com/cloudposse/terraform-aws-budgets/releases/latest
+  - name: Last Updated
+    image: https://img.shields.io/github/last-commit/cloudposse/terraform-aws-budgets.svg?style=for-the-badge
+    url: https://github.com/cloudposse/terraform-aws-budgets/commits
+  - name: Slack Community
+    image: https://slack.cloudposse.com/for-the-badge.svg
+    url: https://slack.cloudposse.com
+
+# List any related terraform modules that this module may be used with or that this module depends on.
+related:
+  - name: AWS Budgets User Guide
+    description: "AWS Budgets documentation."
+    url: https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-managing-costs.html
+  - name: "terraform-null-label"
+    description: "Terraform module designed to generate consistent names and tags for resources. Use terraform-null-label to implement a strict naming convention."
+    url: "https://github.com/cloudposse/terraform-null-label"
+
+# List any resources helpful for someone to get started. For example, link to the hashicorp documentation or AWS documentation.
+references:
+
+# Short description of this project
+description: |-
+  Terraform module to create [AWS Budgets](https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-managing-costs.html) and an associated SNS topic and Lambda function to send notifications to Slack.
+
+# Introduction to the project
+# introduction: |-
+#   This is an introduction.
+
+# How to use this module. Should be an easy example to copy and paste.
+usage: |-
+  For a complete example, see [examples/complete](examples/complete).
+
+  For automated tests of the complete example using [bats](https://github.com/bats-core/bats-core) and [Terratest](https://github.com/gruntwork-io/terratest)
+  (which tests and deploys the example on AWS), see [test](test).
+
+  ```hcl
+  # Create a standard label resource. See [null-label](https://github.com/cloudposse/terraform-null-label/#terraform-null-label--)
+  module "label" {
+    source  = "cloudposse/label/null"
+    # Cloud Posse recommends pinning every module to a specific version, though usually you want to use the current one
+    # version = "x.x.x"
+
+    namespace = "eg"
+    name      = "example"
+  }
+
+  locals {
+    budgets = [
+      {
+        name            = "budget-ec2-monthly"
+        budget_type     = "COST"
+        limit_amount    = "1200"
+        limit_unit      = "USD"
+        time_period_end = "2087-06-15_00:00"
+        time_unit       = "MONTHLY"
+
+        cost_filter = {
+          Service = ["Amazon Elastic Compute Cloud - Compute"]
+        }
+
+        notification = {
+          comparison_operator = "GREATER_THAN"
+          threshold           = "100"
+          threshold_type      = "PERCENTAGE"
+          notification_type   = "FORECASTED"
+        }
+      },
+      {
+        name         = "100-total-monthly"
+        budget_type  = "COST"
+        limit_amount = "100"
+        limit_unit   = "USD"
+        time_unit    = "MONTHLY"
+      },
+      {
+        name         = "s3-3GB-limit-monthly"
+        budget_type  = "USAGE"
+        limit_amount = "3"
+        limit_unit   = "GB"
+        time_unit    = "MONTHLY"
+      }
+    ]
+  }
+
+  module "budgets" {
+    source  = "cloudposse/budgets/aws"
+    # Cloud Posse recommends pinning every module to a specific version
+    # version = "x.x.x"
+
+    budgets = local.budgets
+
+    # create an SNS topic and lambda for Slack notifications
+    notifications_enabled = true
+    slack_webhook_url     = "https://slack-webhook-url"
+    slack_username        = "AWS Budgets"
+    slack_channel         = "notifications"
+
+    # encrypt SNS topic, this also creates a KMS CMK that allows `budgets.amazonaws.com` to use it
+    encryption_enabled = true
+
+    context = module.label.this
+  }
+  ```
+
+# Example usage
+examples: |-
+  Here is an example of using this module:
+  - [`examples/complete`](https://github.com/cloudposse/terraform-aws-budgets/) - complete example of using this module
+
+# How to get started quickly
+# quickstart: |-
+#   Here's how to get started...
+
+# Other files to include in this README from the project folder
+include:
+  - "docs/targets.md"
+  - "docs/terraform.md"
+
+# Contributors to this project
+contributors: []
